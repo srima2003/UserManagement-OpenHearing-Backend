@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -62,9 +63,21 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    // UPDATED: Now accepts 'keyword' for server-side search
     @Override
-    public Page<UserDTO> getAllUsers(int page, int size) {
-        Page<User> users = userRepository.findByIsActiveTrue(PageRequest.of(page, size));
+    public Page<UserDTO> getAllUsers(int page, int size, String keyword) {
+        // Sort by ID descending (newest first)
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<User> users;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            // Search Mode: Find by name OR email
+            users = userRepository.searchUsers(keyword, pageRequest);
+        } else {
+            // Normal Mode: Get all active usersl
+            users = userRepository.findByIsActiveTrue(pageRequest);
+        }
+
         return users.map(u -> {
             UserDTO dto = new UserDTO();
             BeanUtils.copyProperties(u, dto);
