@@ -29,8 +29,11 @@ public class UserController {
     @GetMapping
     public ResponseEntity<Page<UserDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "2147483647") int size) {
-        return ResponseEntity.ok(userService.getAllUsers(page, size));
+            @RequestParam(defaultValue = "15") int size,
+            @RequestParam(required = false) String keyword // 1. Accept the keyword
+            ){
+        // 2. Pass the keyword to the service
+        return ResponseEntity.ok(userService.getAllUsers(page, size, keyword));
     }
     
     @DeleteMapping("/{id}")
